@@ -15,6 +15,7 @@ body {
   color:#fff;
 }
 .container { max-width:900px; margin:0 auto; padding:20px; }
+
 .header { text-align:center; margin-bottom:20px; }
 .header h1 { font-size:1.6em; margin:0; }
 
@@ -29,7 +30,7 @@ body {
 .card.show { opacity:1; transform:translateY(0); }
 
 .hero { display:flex; justify-content:center; margin-bottom:18px; }
-.hero video { max-width:100%; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
+.hero img { max-width:100%; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
 
 label { font-weight:600; margin-top:10px; display:block; }
 input, button {
@@ -61,12 +62,22 @@ button:hover { background:#4e342e; }
 
 #enjoy {
   font-size:1.3em; text-align:center; margin-top:20px;
-  font-weight:bold; color:#3e2723; opacity:0;
+  font-weight:bold; color:#fff; opacity:0;
   transition:opacity 1.5s ease;
 }
 #enjoy.show { opacity:1; }
 
-.output-section { display:none; }
+.output-section, #inputCard, #resultPage { display:none; }
+.classification { font-weight:bold; text-align:center; margin-top:12px; font-size:1.2em; }
+.class-hot { color:red; }
+.class-perfect { color:green; }
+.class-cold { color:blue; }
+
+.validation-card {
+  background:#f0e6dc; color:#333; border-radius:12px;
+  padding:12px; margin-bottom:12px;
+}
+.validation-card ul { padding-left:20px; }
 </style>
 
 <!-- MathJax untuk rumus -->
@@ -77,16 +88,29 @@ button:hover { background:#4e342e; }
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <h1>☕ Simulasi Penurunan Suhu Kopi (Euler)</h1>
+
+  <!-- PAGE 1: HOME -->
+  <div class="card show" id="homeScreen">
+    <div class="hero">
+      <img src="assets/ornamen.png" alt="Ornamen Kopi">
+    </div>
+    <h2 style="text-align:center;">☕ Selamat Datang!</h2>
+    <p style="text-align:center;">Klik tombol di bawah untuk memulai simulasi penurunan suhu kopi.</p>
+    <button id="startSim">Mulai Simulasi 🚀</button>
   </div>
 
-  <!-- INPUT -->
-  <div class="card show" id="inputCard">
-    <div class="hero">
-      <video autoplay muted loop playsinline>
-        <source src="assets/ornamen.mp4" type="video/mp4">
-      </video>
+  <!-- PAGE 2: INPUT -->
+  <div id="inputCard" class="card">
+
+    <!-- Aturan Validasi -->
+    <div class="validation-card show">
+      <h3 style="text-align:center;">📌 Aturan Validasi Sederhana</h3>
+      <ul>
+        <li>Suhu awal (T₀) harus lebih besar dari suhu lingkungan (Tₐ).</li>
+        <li>Konstanta pendinginan (k) harus positif (&gt; 0).</li>
+        <li>Langkah waktu (Δt) tidak boleh lebih besar dari 1 menit.</li>
+        <li>Suhu target harus berada di antara Tₐ dan T₀.</li>
+      </ul>
     </div>
 
     <label for="t0">Suhu awal T₀ (°C)</label>
@@ -95,11 +119,11 @@ button:hover { background:#4e342e; }
     <label for="ta">Suhu lingkungan Tₐ (°C)</label>
     <input id="ta" type="number" value="27">
 
-    <label for="k">Konstanta pendinginan k (per menit)</label>
+    <label for="k">Konstanta pendinginan k (per menit, >0)</label>
     <input id="k" type="number" step="0.001" value="0.03">
 
-    <label for="dt">Δt (menit)</label>
-    <input id="dt" type="number" step="0.1" value="0.5">
+    <label for="dt">Δt (menit, gunakan angka bulat ≤ 1)</label>
+    <input id="dt" type="number" step="1" value="1">
 
     <label for="dur">Durasi simulasi (menit)</label>
     <input id="dur" type="number" value="60">
@@ -107,19 +131,19 @@ button:hover { background:#4e342e; }
     <button id="run">Gasss 🚀</button>
   </div>
 
-  <!-- OUTPUT -->
-  <div class="output-section" id="output">
+  <!-- PAGE 3: HASIL -->
+  <div id="resultPage" class="output-section">
     <div class="card" id="rumusCard">
       <h2>Rumus</h2>
       <div class="math">
         <p>Hukum Pendinginan Newton: $$\\frac{dT}{dt} = -k(T - T_a)$$</p>
         <p>Metode Euler: $$T_{n+1} = T_n + \\Delta t \\cdot (-k(T_n - T_a))$$</p>
-        <p>Keterangan: T suhu (°C), Tₐ suhu lingkungan, k konstanta, Δt waktu (menit).</p>
       </div>
     </div>
 
     <div class="card" id="grafikCard">
       <h2>Grafik Hasil Simulasi</h2>
+      <div style="text-align:center; margin-bottom:4px;"><b>Waktu (menit) vs Suhu (°C)</b></div>
       <div id="chart"></div>
     </div>
 
@@ -127,10 +151,12 @@ button:hover { background:#4e342e; }
       <h2>Tabel Hasil</h2>
       <div class="table-fixed"><table id="resultTable"></table></div>
       <p id="summary"></p>
+      <div id="classification" class="classification"></div>
     </div>
 
     <div id="enjoy">☕ Selamat Menikmati!</div>
   </div>
+
 </div>
 
 <script>
@@ -158,14 +184,21 @@ function drawChart(times, temps) {
   svg.setAttribute('height',height);
   svg.setAttribute('viewBox','0 0 '+width+' '+height);
 
-  // axis
+  // axis X
   const axisX = document.createElementNS(svgNS,'line');
   axisX.setAttribute('x1',pad); axisX.setAttribute('y1',height-pad);
   axisX.setAttribute('x2',width-pad); axisX.setAttribute('y2',height-pad);
   axisX.setAttribute('stroke','#ccc'); axisX.setAttribute('stroke-width','1');
   svg.appendChild(axisX);
 
-  // line
+  // axis Y
+  const axisY = document.createElementNS(svgNS,'line');
+  axisY.setAttribute('x1',pad); axisY.setAttribute('y1',pad);
+  axisY.setAttribute('x2',pad); axisY.setAttribute('y2',height-pad);
+  axisY.setAttribute('stroke','#ccc'); axisY.setAttribute('stroke-width','1');
+  svg.appendChild(axisY);
+
+  // line chart
   const points = temps.map((t,i)=>{
     const x = pad + (i/(temps.length-1))*(width-pad*2);
     const y = pad + (1-((t-minT)/(maxT-minT||1)))*(height-pad*2);
@@ -183,20 +216,42 @@ function drawChart(times, temps) {
   chart.appendChild(svg);
 }
 
+// classification suhu
+function classifyTemperature(temp, Ta, T0) {
+  if(temp < 65) return { text:'☕ Terlalu dingin', className:'class-cold' };
+  if(temp >=65 && temp <=T0) return { text:'☕ Suhu kopi tepat untuk dinikmati', className:'class-perfect' };
+  return { text:'☕ Terlalu panas', className:'class-hot' };
+}
+
+// Event Home → Input
+document.getElementById('startSim').addEventListener('click',()=>{
+  document.getElementById('homeScreen').style.display='none';
+  document.getElementById('inputCard').style.display='block';
+  setTimeout(()=>document.getElementById('inputCard').classList.add('show'),50);
+});
+
+// Event Run Simulation
 document.getElementById('run').addEventListener('click',()=>{
   const T0=parseFloat(document.getElementById('t0').value);
   const Ta=parseFloat(document.getElementById('ta').value);
   const k=parseFloat(document.getElementById('k').value);
   const dt=parseFloat(document.getElementById('dt').value);
   const dur=parseFloat(document.getElementById('dur').value);
+
+  // validasi sederhana
   if([T0,Ta,k,dt,dur].some(v=>isNaN(v))) return alert('Isi semua input dengan angka valid.');
+  if(T0 <= Ta) return alert('Suhu awal (T₀) harus lebih besar dari suhu lingkungan (Tₐ).');
+  if(k <=0) return alert('Konstanta pendinginan (k) harus > 0.');
+  if(dt>1) return alert('Langkah waktu (Δt) tidak boleh lebih besar dari 1 menit.');
+  if(dur<=0) return alert('Durasi simulasi harus > 0.');
 
   const res=runSimulation(T0,Ta,k,dt,dur);
   drawChart(res.times,res.temps);
 
-  // tampilkan output dengan transisi
-  document.getElementById('output').style.display='block';
-  setTimeout(()=>{ document.querySelectorAll('#output .card').forEach(c=>c.classList.add('show')); },120);
+  // tampilkan hasil page 3
+  document.getElementById('inputCard').style.display='none';
+  document.getElementById('resultPage').style.display='block';
+  setTimeout(()=>{ document.querySelectorAll('#resultPage .card').forEach(c=>c.classList.add('show')); },120);
 
   // tabel
   const table=document.getElementById('resultTable');
@@ -211,10 +266,18 @@ document.getElementById('run').addEventListener('click',()=>{
     idx>=0 ? '☕ Suhu 65°C tercapai pada t = <b>'+res.times[idx]+' menit</b>'
            : 'ℹ️ Tidak tercapai 65°C dalam durasi simulasi.';
 
+  // klasifikasi suhu terakhir
+  const lastTemp = res.temps[res.temps.length-1];
+  const classification = classifyTemperature(lastTemp, Ta, T0);
+  const classDiv = document.getElementById('classification');
+  classDiv.textContent = classification.text;
+  classDiv.className = 'classification ' + classification.className;
+
   // animasi enjoy
   setTimeout(()=>document.getElementById('enjoy').classList.add('show'),800);
 });
 
+// Register Service Worker PWA
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js');
 }
