@@ -1,7 +1,7 @@
 {
   "name": "Simulasi Pendinginan Kopi",
   "short_name": "Simulasi Kopi",
-  "description": "Simulasi penurunan suhu kopi menggunakan metode Euler.",
+  "description": "Simulasi penurunan suhu kopi menggunakan metode Euler",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#4e342e",
