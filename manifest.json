@@ -1,19 +1,19 @@
 {
   "name": "Simulasi Pendinginan Kopi",
-  "short_name": "KopiSim",
-  "start_url": "index.html",
+  "short_name": "Simulasi Kopi",
+  "description": "Simulasi penurunan suhu kopi menggunakan metode Euler.",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f3e9df",
-  "theme_color": "#5b3928",
-  "orientation": "portrait",
+  "background_color": "#4e342e",
+  "theme_color": "#4e342e",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "assets/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
