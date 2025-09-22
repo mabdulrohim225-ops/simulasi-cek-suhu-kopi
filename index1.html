@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Simulasi Pendinginan Kopi</title>
+  <link rel="icon" type="image/png" href="logokopag.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5b3928">
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <!-- Page: Splash -->
+    <section id="page-splash" class="page active splash">
+      <div class="splash-container">
+        <img src="opening.gif" alt="Opening Animation">
+      </div>
+    </section>
+
+    <!-- Page: Home -->
+    <section id="page-home" class="page">
+      <header class="card header-card">
+        <img src="logokopag.png" alt="Logo Kopag" class="logo">
+        <div>
+          <h1>Simulasi Pendinginan Kopi</h1>
+          <p class="subtitle">Perkirakan kapan kopi siap diminum menggunakan Metode Euler</p>
+        </div>
+      </header>
+      <main class="content">
+        <div class="card hero-card">
+          <div class="hero-left">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><circle cx='60' cy='60' r='50' fill='%23d6a77a'/></svg>" alt="coffee" />
+          </div>
+          <div class="hero-right">
+            <button class="btn primary" id="btn-start">Mulai Simulasi</button>
+            <button class="btn secondary" id="btn-preset">Preset Cepat</button>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- Page: Input -->
+    <section id="page-input" class="page">
+      <header class="card header-card small">
+        <button class="back" id="back-home">&larr; Kembali</button>
+        <h2>Input Parameter</h2>
+      </header>
+      <main class="content">
+        <form id="sim-form" class="card form-card" novalidate>
+          <label>Suhu awal kopi (°C)
+            <input type="number" id="t0" value="90" step="0.1" required>
+            <small class="error" id="err-t0"></small>
+          </label>
+          <label>Suhu lingkungan (°C)
+            <input type="number" id="ta" value="27" step="0.1" required>
+            <small class="error" id="err-ta"></small>
+          </label>
+          <label>Konstanta pendinginan (k)
+            <input type="number" id="k" value="0.05" step="0.001" required>
+            <small class="error" id="err-k"></small>
+          </label>
+          <label>Durasi simulasi (menit)
+            <input type="number" id="duration" value="60" step="1" required>
+            <small class="error" id="err-duration"></small>
+          </label>
+          <label>Δt (menit)
+            <input type="number" id="dt" value="1" step="0.1" required>
+            <small class="error" id="err-dt"></small>
+          </label>
+
+          <div class="form-actions">
+            <button type="button" class="btn secondary" id="btn-back">Kembali</button>
+            <button type="submit" class="btn primary" id="btn-run" disabled>Jalankan Simulasi</button>
+          </div>
+        </form>
+      </main>
+    </section>
+
+    <!-- Page: Results -->
+    <section id="page-results" class="page">
+      <header class="card header-card small">
+        <button class="back" id="back-input">&larr; Kembali</button>
+        <h2>Hasil Simulasi</h2>
+      </header>
+      <main class="content">
+        <div class="card loading-card" id="loading" style="display:none">
+          <p>Simulasi sedang dijalankan...</p>
+        </div>
+
+        <div class="card graph-card" id="graph-card" style="display:none">
+          <canvas id="chart"></canvas>
+        </div>
+
+        <div class="card table-card" id="table-card" style="display:none">
+          <h3>Tabel Ringkasan</h3>
+          <div id="table-container"></div>
+        </div>
+
+        <div class="card formula-card" id="formula-card" style="display:none">
+          <h3>Rumus yang digunakan</h3>
+          <pre>
+ dT/dt = -k (T - T_a)
+
+ T_{n+1} = T_n + Δt * (-k (T_n - T_a))
+          </pre>
+        </div>
+
+        <div class="card calc-card" id="calc-card" style="display:none">
+          <h3>Contoh Perhitungan (langkah awal)</h3>
+          <div id="calc-steps"></div>
+        </div>
+
+        <div class="card summary-card" id="summary-card" style="display:none">
+          <h3>Ringkasan</h3>
+          <p id="summary-text"></p>
+        </div>
+
+        <div class="card classification-card" id="classification-card" style="display:none">
+          <h3>Klasifikasi</h3>
+          <p id="class-text"></p>
+        </div>
+
+        <div class="actions">
+          <button class="btn secondary" id="btn-repeat">Ulangi Simulasi</button>
+        </div>
+      </main>
+    </section>
+
+  </div>
+
+<script src="app.js"></script>
+</body>
+</html>
