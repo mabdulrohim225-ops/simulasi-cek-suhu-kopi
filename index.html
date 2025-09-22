@@ -8,84 +8,38 @@
 <meta name="theme-color" content="#4e342e">
 <link rel="icon" href="assets/icon-192.png" type="image/png">
 <style>
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  margin:0; padding:0;
-  background: linear-gradient(135deg, rgba(111,78,55,0.88), rgba(62,39,35,0.95));
-  color:#fff;
-}
+body { font-family: 'Segoe UI', Arial, sans-serif; margin:0; padding:0; background: linear-gradient(135deg, rgba(111,78,55,0.88), rgba(62,39,35,0.95)); color:#fff; }
 .container { max-width:900px; margin:0 auto; padding:20px; }
-
 .header { text-align:center; margin-bottom:20px; }
 .header h1 { font-size:1.6em; margin:0; }
-
-.card {
-  background:#fff; color:#333;
-  padding:20px; margin:20px 0;
-  border-radius:16px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.25);
-  opacity:0; transform:translateY(20px);
-  transition:all 0.6s ease;
-}
+.card { background:#fff; color:#333; padding:20px; margin:20px 0; border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,0.25); opacity:0; transform:translateY(20px); transition:all 0.6s ease; }
 .card.show { opacity:1; transform:translateY(0); }
-
 .hero { display:flex; justify-content:center; margin-bottom:18px; }
 .hero img { max-width:100%; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
-
 label { font-weight:600; margin-top:10px; display:block; }
-input, button {
-  width:100%; padding:12px; margin-top:6px;
-  border-radius:8px; border:1px solid #ccc; font-size:1em;
-}
-button {
-  background:#6f4e37; color:#fff; border:none; font-weight:bold;
-  cursor:pointer; transition:0.3s; box-shadow:0 6px 12px rgba(0,0,0,0.12);
-}
+input, button { width:100%; padding:12px; margin-top:6px; border-radius:8px; border:1px solid #ccc; font-size:1em; }
+button { background:#6f4e37; color:#fff; border:none; font-weight:bold; cursor:pointer; transition:0.3s; box-shadow:0 6px 12px rgba(0,0,0,0.12); }
 button:hover { background:#4e342e; }
-
 #chart { width:100%; height:260px; margin:10px 0; position:relative; }
-
-.table-fixed {
-  max-height:240px; overflow:auto; margin-top:10px;
-  background:#fff; border-radius:8px; padding:6px;
-}
+.table-fixed { max-height:240px; overflow:auto; margin-top:10px; background:#fff; border-radius:8px; padding:6px; }
 .table-fixed table { width:100%; border-collapse:collapse; }
-.table-fixed th, .table-fixed td {
-  padding:8px; text-align:center; border-bottom:1px solid #eee; color:#222;
-}
+.table-fixed th, .table-fixed td { padding:8px; text-align:center; border-bottom:1px solid #eee; color:#222; }
 .table-fixed tr:nth-child(even) { background:#fafafa; }
-
-.math {
-  background:#f9fbff; padding:12px; border-radius:10px;
-  border:1px solid #e6f0fb; margin-bottom:12px; color:#222;
-}
-
-#enjoy {
-  font-size:1.3em; text-align:center; margin-top:20px;
-  font-weight:bold; color:#fff; opacity:0;
-  transition:opacity 1.5s ease;
-}
+.math { background:#f9fbff; padding:12px; border-radius:10px; border:1px solid #e6f0fb; margin-bottom:12px; color:#222; }
+#enjoy { font-size:1.3em; text-align:center; margin-top:20px; font-weight:bold; color:#fff; opacity:0; transition:opacity 1.5s ease; }
 #enjoy.show { opacity:1; }
-
 .output-section, #inputCard, #resultPage { display:none; }
 .classification { font-weight:bold; text-align:center; margin-top:12px; font-size:1.2em; }
 .class-hot { color:red; }
 .class-perfect { color:green; }
 .class-cold { color:blue; }
-
-.validation-card {
-  background:#f0e6dc; color:#333; border-radius:12px;
-  padding:12px; margin-bottom:12px;
-}
+.validation-card { background:#f0e6dc; color:#333; border-radius:12px; padding:12px; margin-bottom:12px; }
 .validation-card ul { padding-left:20px; }
-
 #restartSim { margin-top:12px; }
+#tooltip { position:absolute; background:#fff; color:#333; padding:4px 8px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.2); pointer-events:none; font-size:0.9em; z-index:10; }
 </style>
-
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script id="MathJax-script" async 
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
 <div class="container">
@@ -111,28 +65,21 @@ button:hover { background:#4e342e; }
       <li>Suhu target harus berada di antara Tₐ dan T₀.</li>
     </ul>
   </div>
-
   <label for="t0">Suhu awal T₀ (°C)</label>
   <input id="t0" type="number" value="90">
-
   <label for="ta">Suhu lingkungan Tₐ (°C)</label>
   <input id="ta" type="number" value="27">
-
   <label for="k">Konstanta pendinginan k (per menit, >0)</label>
   <input id="k" type="number" step="0.001" value="0.03">
-
   <label for="dt">Δt (menit, gunakan angka bulat ≤ 1)</label>
   <input id="dt" type="number" step="1" value="1">
-
   <label for="dur">Durasi simulasi (menit)</label>
   <input id="dur" type="number" value="60">
-
   <button id="run">Gasss 🚀</button>
 </div>
 
 <!-- PAGE 3: HASIL -->
 <div id="resultPage" class="output-section">
-
   <div class="card" id="inputSummaryCard">
     <h2>📊 Ringkasan Input</h2>
     <ul>
@@ -143,7 +90,6 @@ button:hover { background:#4e342e; }
       <li>Durasi simulasi: <span id="summaryDur"></span> menit</li>
     </ul>
   </div>
-
   <div class="card" id="rumusCard">
     <h2>Rumus</h2>
     <div class="math">
@@ -151,85 +97,107 @@ button:hover { background:#4e342e; }
       <p>Metode Euler: $$T_{n+1} = T_n + \\Delta t \\cdot (-k(T_n - T_a))$$</p>
     </div>
   </div>
-
   <div class="card" id="grafikCard">
     <h2>Grafik Hasil Simulasi</h2>
     <div style="text-align:center; margin-bottom:4px;"><b>Waktu (menit) vs Suhu (°C)</b></div>
     <div id="chart"></div>
   </div>
-
   <div class="card" id="tabelCard">
     <h2>Tabel Hasil</h2>
     <div class="table-fixed"><table id="resultTable"></table></div>
     <p id="summary"></p>
     <div id="classification" class="classification"></div>
-    <div style="text-align:center;">
-      <button id="restartSim">Mulai Simulasi Lagi 🔄</button>
-    </div>
+    <div style="text-align:center;"><button id="restartSim">Mulai Simulasi Lagi 🔄</button></div>
   </div>
-
   <div id="enjoy">☕ Selamat Menikmati!</div>
 </div>
 
 <script>
-function runSimulation(T0, Ta, k, dt, dur) {
-  const steps = Math.ceil(dur / dt);
-  let T = parseFloat(T0);
-  const times = [0], temps = [Math.round(T)];
-  for (let i = 0; i < steps; i++) {
-    const dTdt = -k * (T - Ta);
-    T = T + dt * dTdt;
-    temps.push(Math.round(T)); // suhu bulat per menit
+function runSimulation(T0, Ta, k, dt, dur){
+  const steps = Math.ceil(dur/dt);
+  let T=parseFloat(T0);
+  const times=[0], temps=[Math.round(T)];
+  for(let i=0;i<steps;i++){
+    const dTdt = -k*(T-Ta);
+    T=T+dt*dTdt;
     times.push((i+1)*dt);
+    temps.push(Math.round(T));
   }
-  return { times, temps };
+  return {times, temps};
 }
 
-function drawChart(times, temps) {
-  const chart = document.getElementById('chart');
-  chart.innerHTML = '';
-  const width = chart.clientWidth || 800, height = 260, pad = 36;
-  const maxT = Math.max(...temps), minT = Math.min(...temps);
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS,'svg');
+function drawChart(times, temps){
+  const chart=document.getElementById('chart');
+  chart.innerHTML='';
+  const width=chart.clientWidth||800, height=260, pad=36;
+  const maxT=Math.max(...temps), minT=Math.min(...temps);
+  const svgNS='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(svgNS,'svg');
   svg.setAttribute('width','100%');
   svg.setAttribute('height',height);
   svg.setAttribute('viewBox','0 0 '+width+' '+height);
 
-  const axisX = document.createElementNS(svgNS,'line');
+  // Axis X & Y
+  const axisX=document.createElementNS(svgNS,'line');
   axisX.setAttribute('x1',pad); axisX.setAttribute('y1',height-pad);
   axisX.setAttribute('x2',width-pad); axisX.setAttribute('y2',height-pad);
-  axisX.setAttribute('stroke','#ccc'); axisX.setAttribute('stroke-width','1');
-  svg.appendChild(axisX);
-
-  const axisY = document.createElementNS(svgNS,'line');
+  axisX.setAttribute('stroke','#ccc'); axisX.setAttribute('stroke-width','1'); svg.appendChild(axisX);
+  const axisY=document.createElementNS(svgNS,'line');
   axisY.setAttribute('x1',pad); axisY.setAttribute('y1',pad);
   axisY.setAttribute('x2',pad); axisY.setAttribute('y2',height-pad);
-  axisY.setAttribute('stroke','#ccc'); axisY.setAttribute('stroke-width','1');
-  svg.appendChild(axisY);
+  axisY.setAttribute('stroke','#ccc'); axisY.setAttribute('stroke-width','1'); svg.appendChild(axisY);
 
+  // Polyline
   const points = temps.map((t,i)=>{
     const x = pad + (i/(temps.length-1))*(width-pad*2);
     const y = pad + (1-((t-minT)/(maxT-minT||1)))*(height-pad*2);
     return x+','+y;
   }).join(' ');
-
-  const poly = document.createElementNS(svgNS,'polyline');
+  const poly=document.createElementNS(svgNS,'polyline');
   poly.setAttribute('points',points);
-  poly.setAttribute('fill','none');
-  poly.setAttribute('stroke','#d35400');
-  poly.setAttribute('stroke-width','3');
-  poly.setAttribute('stroke-linecap','round');
-  poly.setAttribute('stroke-linejoin','round');
-  svg.appendChild(poly);
+  poly.setAttribute('fill','none'); poly.setAttribute('stroke','#d35400');
+  poly.setAttribute('stroke-width','3'); poly.setAttribute('stroke-linecap','round');
+  poly.setAttribute('stroke-linejoin','round'); svg.appendChild(poly);
+
+  // Garis suhu 65°C
+  const line65=document.createElementNS(svgNS,'line');
+  const y65=pad + (1-((65-minT)/(maxT-minT||1)))*(height-pad*2);
+  line65.setAttribute('x1',pad); line65.setAttribute('y1',y65);
+  line65.setAttribute('x2',width-pad); line65.setAttribute('y2',y65);
+  line65.setAttribute('stroke','green'); line65.setAttribute('stroke-dasharray','5,5'); line65.setAttribute('stroke-width','2');
+  svg.appendChild(line65);
+
+  // Titik interaktif
+  temps.forEach((t,i)=>{
+    const x = pad + (i/(temps.length-1))*(width-pad*2);
+    const y = pad + (1-((t-minT)/(maxT-minT||1)))*(height-pad*2);
+    const dot=document.createElementNS(svgNS,'circle');
+    dot.setAttribute('cx',x); dot.setAttribute('cy',y); dot.setAttribute('r',4);
+    dot.setAttribute('fill','#d35400'); dot.setAttribute('cursor','pointer');
+
+    dot.addEventListener('mouseenter', ()=>{
+      let tooltip=document.getElementById('tooltip');
+      if(!tooltip){
+        tooltip=document.createElement('div'); tooltip.id='tooltip';
+        chart.appendChild(tooltip);
+      }
+      tooltip.style.left=(x+10)+'px'; tooltip.style.top=(y+10)+'px';
+      tooltip.innerHTML=`<b>${times[i]} menit</b><br>${temps[i]} °C`;
+    });
+    dot.addEventListener('mouseleave', ()=>{
+      const tooltip=document.getElementById('tooltip'); if(tooltip) tooltip.remove();
+    });
+
+    svg.appendChild(dot);
+  });
 
   chart.appendChild(svg);
 }
 
-function classifyTemperature(temp, Ta, T0) {
-  if(temp < 65) return { text:'☕ Terlalu dingin', className:'class-cold' };
-  if(temp >=65 && temp <=T0) return { text:'☕ Suhu kopi tepat untuk dinikmati', className:'class-perfect' };
-  return { text:'☕ Terlalu panas', className:'class-hot' };
+function classifyTemperature(temp, Ta, T0){
+  if(temp<65) return {text:'☕ Terlalu dingin', className:'class-cold'};
+  if(temp>=65 && temp<=T0) return {text:'☕ Suhu kopi tepat untuk dinikmati', className:'class-perfect'};
+  return {text:'☕ Terlalu panas', className:'class-hot'};
 }
 
 // Home → Input
@@ -246,22 +214,20 @@ document.getElementById('run').addEventListener('click',()=>{
   const k=parseFloat(document.getElementById('k').value);
   const dt=parseFloat(document.getElementById('dt').value);
   const dur=parseFloat(document.getElementById('dur').value);
-
   if([T0,Ta,k,dt,dur].some(v=>isNaN(v))) return alert('Isi semua input dengan angka valid.');
-  if(T0 <= Ta) return alert('Suhu awal (T₀) harus lebih besar dari suhu lingkungan (Tₐ).');
-  if(k <=0) return alert('Konstanta pendinginan (k) harus > 0.');
+  if(T0<=Ta) return alert('Suhu awal (T₀) harus lebih besar dari suhu lingkungan (Tₐ).');
+  if(k<=0) return alert('Konstanta pendinginan (k) harus > 0.');
   if(dt>1) return alert('Langkah waktu (Δt) tidak boleh lebih besar dari 1 menit.');
   if(dur<=0) return alert('Durasi simulasi harus > 0.');
 
   const res=runSimulation(T0,Ta,k,dt,dur);
-
   drawChart(res.times,res.temps);
 
-  document.getElementById('summaryT0').textContent = T0;
-  document.getElementById('summaryTa').textContent = Ta;
-  document.getElementById('summaryK').textContent = k;
-  document.getElementById('summaryDt').textContent = dt;
-  document.getElementById('summaryDur').textContent = dur;
+  document.getElementById('summaryT0').textContent=T0;
+  document.getElementById('summaryTa').textContent=Ta;
+  document.getElementById('summaryK').textContent=k;
+  document.getElementById('summaryDt').textContent=dt;
+  document.getElementById('summaryDur').textContent=dur;
 
   document.getElementById('inputCard').style.display='none';
   document.getElementById('resultPage').style.display='block';
@@ -270,7 +236,9 @@ document.getElementById('run').addEventListener('click',()=>{
   const table=document.getElementById('resultTable');
   table.innerHTML='<tr><th>t (menit)</th><th>T (°C)</th></tr>';
   res.times.forEach((t,i)=>{
-    table.innerHTML+='<tr><td>'+t+' menit</td><td>'+res.temps[i]+' °C</td></tr>';
+    const temp=res.temps[i];
+    let style=(temp===65)?' style="color:green;font-weight:bold;"':'';
+    table.innerHTML+=`<tr${style}><td>${t} menit</td><td>${temp} °C</td></tr>`;
   });
 
   const idx=res.temps.findIndex(v=>v<=65);
@@ -278,16 +246,16 @@ document.getElementById('run').addEventListener('click',()=>{
     idx>=0 ? '☕ Suhu 65°C tercapai pada t = <b>'+res.times[idx]+' menit</b>'
            : 'ℹ️ Tidak tercapai 65°C dalam durasi simulasi.';
 
-  const lastTemp = res.temps[res.temps.length-1];
-  const classification = classifyTemperature(lastTemp, Ta, T0);
-  const classDiv = document.getElementById('classification');
-  classDiv.textContent = classification.text;
-  classDiv.className = 'classification ' + classification.className;
+  const lastTemp=res.temps[res.temps.length-1];
+  const classification=classifyTemperature(lastTemp,Ta,T0);
+  const classDiv=document.getElementById('classification');
+  classDiv.textContent=classification.text;
+  classDiv.className='classification '+classification.className;
 
   setTimeout(()=>document.getElementById('enjoy').classList.add('show'),800);
 });
 
-document.getElementById('restartSim').addEventListener('click', ()=>{
+document.getElementById('restartSim').addEventListener('click',()=>{
   document.getElementById('resultPage').style.display='none';
   document.getElementById('inputCard').style.display='block';
   setTimeout(()=>document.getElementById('inputCard').classList.add('show'),50);
