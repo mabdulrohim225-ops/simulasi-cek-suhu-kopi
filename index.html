@@ -1,137 +1,223 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Simulasi Pendinginan Kopi</title>
-  <link rel="icon" type="image/png" href="logokopag.png">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#5b3928">
-  <link rel="stylesheet" href="style.css">
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>☕ Simulasi Pendinginan Kopi</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4e342e">
+<link rel="icon" href="assets/icon-192.png" type="image/png">
+<style>
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin:0; padding:0;
+  background: linear-gradient(135deg, rgba(111,78,55,0.88), rgba(62,39,35,0.95));
+  color:#fff;
+}
+.container { max-width:900px; margin:0 auto; padding:20px; }
+.header { text-align:center; margin-bottom:20px; }
+.header h1 { font-size:1.6em; margin:0; }
+
+.card {
+  background:#fff; color:#333;
+  padding:20px; margin:20px 0;
+  border-radius:16px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.25);
+  opacity:0; transform:translateY(20px);
+  transition:all 0.6s ease;
+}
+.card.show { opacity:1; transform:translateY(0); }
+
+.hero { display:flex; justify-content:center; margin-bottom:18px; }
+.hero video { max-width:100%; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
+
+label { font-weight:600; margin-top:10px; display:block; }
+input, button {
+  width:100%; padding:12px; margin-top:6px;
+  border-radius:8px; border:1px solid #ccc; font-size:1em;
+}
+button {
+  background:#6f4e37; color:#fff; border:none; font-weight:bold;
+  cursor:pointer; transition:0.3s; box-shadow:0 6px 12px rgba(0,0,0,0.12);
+}
+button:hover { background:#4e342e; }
+
+#chart { width:100%; height:260px; margin:10px 0; }
+
+.table-fixed {
+  max-height:240px; overflow:auto; margin-top:10px;
+  background:#fff; border-radius:8px; padding:6px;
+}
+.table-fixed table { width:100%; border-collapse:collapse; }
+.table-fixed th, .table-fixed td {
+  padding:8px; text-align:center; border-bottom:1px solid #eee; color:#222;
+}
+.table-fixed tr:nth-child(even) { background:#fafafa; }
+
+.math {
+  background:#f9fbff; padding:12px; border-radius:10px;
+  border:1px solid #e6f0fb; margin-bottom:12px; color:#222;
+}
+
+#enjoy {
+  font-size:1.3em; text-align:center; margin-top:20px;
+  font-weight:bold; color:#3e2723; opacity:0;
+  transition:opacity 1.5s ease;
+}
+#enjoy.show { opacity:1; }
+
+.output-section { display:none; }
+</style>
+
+<!-- MathJax untuk rumus -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async 
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
 </head>
 <body>
-  <div class="app">
-
-    <!-- Page: Splash -->
-    <section id="page-splash" class="page active splash">
-      <div class="splash-container">
-        <img src="opening.gif" alt="Opening Animation">
-      </div>
-    </section>
-
-    <!-- Page: Home -->
-    <section id="page-home" class="page">
-      <header class="card header-card">
-        <img src="logokopag.png" alt="Logo Kopag" class="logo">
-        <div>
-          <h1>Simulasi Pendinginan Kopi</h1>
-          <p class="subtitle">Perkirakan kapan kopi siap diminum menggunakan Metode Euler</p>
-        </div>
-      </header>
-      <main class="content">
-        <div class="card hero-card">
-          <div class="hero-left">
-            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><circle cx='60' cy='60' r='50' fill='%23d6a77a'/></svg>" alt="coffee" />
-          </div>
-          <div class="hero-right">
-            <button class="btn primary" id="btn-start">Mulai Simulasi</button>
-            <button class="btn secondary" id="btn-preset">Preset Cepat</button>
-          </div>
-        </div>
-      </main>
-    </section>
-
-    <!-- Page: Input -->
-    <section id="page-input" class="page">
-      <header class="card header-card small">
-        <button class="back" id="back-home">&larr; Kembali</button>
-        <h2>Input Parameter</h2>
-      </header>
-      <main class="content">
-        <form id="sim-form" class="card form-card" novalidate>
-          <label>Suhu awal kopi (°C)
-            <input type="number" id="t0" value="90" step="0.1" required>
-            <small class="error" id="err-t0"></small>
-          </label>
-          <label>Suhu lingkungan (°C)
-            <input type="number" id="ta" value="27" step="0.1" required>
-            <small class="error" id="err-ta"></small>
-          </label>
-          <label>Konstanta pendinginan (k)
-            <input type="number" id="k" value="0.05" step="0.001" required>
-            <small class="error" id="err-k"></small>
-          </label>
-          <label>Durasi simulasi (menit)
-            <input type="number" id="duration" value="60" step="1" required>
-            <small class="error" id="err-duration"></small>
-          </label>
-          <label>Δt (menit)
-            <input type="number" id="dt" value="1" step="0.1" required>
-            <small class="error" id="err-dt"></small>
-          </label>
-
-          <div class="form-actions">
-            <button type="button" class="btn secondary" id="btn-back">Kembali</button>
-            <button type="submit" class="btn primary" id="btn-run" disabled>Jalankan Simulasi</button>
-          </div>
-        </form>
-      </main>
-    </section>
-
-    <!-- Page: Results -->
-    <section id="page-results" class="page">
-      <header class="card header-card small">
-        <button class="back" id="back-input">&larr; Kembali</button>
-        <h2>Hasil Simulasi</h2>
-      </header>
-      <main class="content">
-        <div class="card loading-card" id="loading" style="display:none">
-          <p>Simulasi sedang dijalankan...</p>
-        </div>
-
-        <div class="card graph-card" id="graph-card" style="display:none">
-          <canvas id="chart"></canvas>
-        </div>
-
-        <div class="card table-card" id="table-card" style="display:none">
-          <h3>Tabel Ringkasan</h3>
-          <div id="table-container"></div>
-        </div>
-
-        <div class="card formula-card" id="formula-card" style="display:none">
-          <h3>Rumus yang digunakan</h3>
-          <pre>
- dT/dt = -k (T - T_a)
-
- T_{n+1} = T_n + Δt * (-k (T_n - T_a))
-          </pre>
-        </div>
-
-        <div class="card calc-card" id="calc-card" style="display:none">
-          <h3>Contoh Perhitungan (langkah awal)</h3>
-          <div id="calc-steps"></div>
-        </div>
-
-        <div class="card summary-card" id="summary-card" style="display:none">
-          <h3>Ringkasan</h3>
-          <p id="summary-text"></p>
-        </div>
-
-        <div class="card classification-card" id="classification-card" style="display:none">
-          <h3>Klasifikasi</h3>
-          <p id="class-text"></p>
-        </div>
-
-        <div class="actions">
-          <button class="btn secondary" id="btn-repeat">Ulangi Simulasi</button>
-        </div>
-      </main>
-    </section>
-
+<div class="container">
+  <div class="header">
+    <h1>☕ Simulasi Penurunan Suhu Kopi (Euler)</h1>
   </div>
 
-<script src="app.js"></script>
+  <!-- INPUT -->
+  <div class="card show" id="inputCard">
+    <div class="hero">
+      <video autoplay muted loop playsinline>
+        <source src="assets/ornamen.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <label for="t0">Suhu awal T₀ (°C)</label>
+    <input id="t0" type="number" value="90">
+
+    <label for="ta">Suhu lingkungan Tₐ (°C)</label>
+    <input id="ta" type="number" value="27">
+
+    <label for="k">Konstanta pendinginan k (per menit)</label>
+    <input id="k" type="number" step="0.001" value="0.03">
+
+    <label for="dt">Δt (menit)</label>
+    <input id="dt" type="number" step="0.1" value="0.5">
+
+    <label for="dur">Durasi simulasi (menit)</label>
+    <input id="dur" type="number" value="60">
+
+    <button id="run">Gasss 🚀</button>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="output-section" id="output">
+    <div class="card" id="rumusCard">
+      <h2>Rumus</h2>
+      <div class="math">
+        <p>Hukum Pendinginan Newton: $$\\frac{dT}{dt} = -k(T - T_a)$$</p>
+        <p>Metode Euler: $$T_{n+1} = T_n + \\Delta t \\cdot (-k(T_n - T_a))$$</p>
+        <p>Keterangan: T suhu (°C), Tₐ suhu lingkungan, k konstanta, Δt waktu (menit).</p>
+      </div>
+    </div>
+
+    <div class="card" id="grafikCard">
+      <h2>Grafik Hasil Simulasi</h2>
+      <div id="chart"></div>
+    </div>
+
+    <div class="card" id="tabelCard">
+      <h2>Tabel Hasil</h2>
+      <div class="table-fixed"><table id="resultTable"></table></div>
+      <p id="summary"></p>
+    </div>
+
+    <div id="enjoy">☕ Selamat Menikmati!</div>
+  </div>
+</div>
+
+<script>
+function runSimulation(T0, Ta, k, dt, dur) {
+  const steps = Math.ceil(dur / dt);
+  let T = parseFloat(T0);
+  const times = [0], temps = [Number(T.toFixed(2))];
+  for (let i = 0; i < steps; i++) {
+    const dTdt = -k * (T - Ta);
+    T = T + dt * dTdt;
+    times.push(Number(((i + 1) * dt).toFixed(2)));
+    temps.push(Number(T.toFixed(2)));
+  }
+  return { times, temps };
+}
+
+function drawChart(times, temps) {
+  const chart = document.getElementById('chart');
+  chart.innerHTML = '';
+  const width = chart.clientWidth || 800, height = 260, pad = 36;
+  const maxT = Math.max(...temps), minT = Math.min(...temps);
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height',height);
+  svg.setAttribute('viewBox','0 0 '+width+' '+height);
+
+  // axis
+  const axisX = document.createElementNS(svgNS,'line');
+  axisX.setAttribute('x1',pad); axisX.setAttribute('y1',height-pad);
+  axisX.setAttribute('x2',width-pad); axisX.setAttribute('y2',height-pad);
+  axisX.setAttribute('stroke','#ccc'); axisX.setAttribute('stroke-width','1');
+  svg.appendChild(axisX);
+
+  // line
+  const points = temps.map((t,i)=>{
+    const x = pad + (i/(temps.length-1))*(width-pad*2);
+    const y = pad + (1-((t-minT)/(maxT-minT||1)))*(height-pad*2);
+    return x+','+y;
+  }).join(' ');
+  const poly = document.createElementNS(svgNS,'polyline');
+  poly.setAttribute('points',points);
+  poly.setAttribute('fill','none');
+  poly.setAttribute('stroke','#d35400');
+  poly.setAttribute('stroke-width','3');
+  poly.setAttribute('stroke-linecap','round');
+  poly.setAttribute('stroke-linejoin','round');
+  svg.appendChild(poly);
+
+  chart.appendChild(svg);
+}
+
+document.getElementById('run').addEventListener('click',()=>{
+  const T0=parseFloat(document.getElementById('t0').value);
+  const Ta=parseFloat(document.getElementById('ta').value);
+  const k=parseFloat(document.getElementById('k').value);
+  const dt=parseFloat(document.getElementById('dt').value);
+  const dur=parseFloat(document.getElementById('dur').value);
+  if([T0,Ta,k,dt,dur].some(v=>isNaN(v))) return alert('Isi semua input dengan angka valid.');
+
+  const res=runSimulation(T0,Ta,k,dt,dur);
+  drawChart(res.times,res.temps);
+
+  // tampilkan output dengan transisi
+  document.getElementById('output').style.display='block';
+  setTimeout(()=>{ document.querySelectorAll('#output .card').forEach(c=>c.classList.add('show')); },120);
+
+  // tabel
+  const table=document.getElementById('resultTable');
+  table.innerHTML='<tr><th>t (menit)</th><th>T (°C)</th></tr>';
+  res.times.forEach((t,i)=>{
+    table.innerHTML+='<tr><td>'+t+' menit</td><td>'+res.temps[i]+' °C</td></tr>';
+  });
+
+  // ringkasan
+  const idx=res.temps.findIndex(v=>v<=65);
+  document.getElementById('summary').innerHTML =
+    idx>=0 ? '☕ Suhu 65°C tercapai pada t = <b>'+res.times[idx]+' menit</b>'
+           : 'ℹ️ Tidak tercapai 65°C dalam durasi simulasi.';
+
+  // animasi enjoy
+  setTimeout(()=>document.getElementById('enjoy').classList.add('show'),800);
+});
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
 </body>
 </html>
