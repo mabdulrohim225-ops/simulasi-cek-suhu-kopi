@@ -175,12 +175,12 @@ button:hover { background:#4e342e; }
 function runSimulation(T0, Ta, k, dt, dur) {
   const steps = Math.ceil(dur / dt);
   let T = parseFloat(T0);
-  const times = [0], temps = [Number(T.toFixed(2))];
+  const times = [0], temps = [Math.round(T)];
   for (let i = 0; i < steps; i++) {
     const dTdt = -k * (T - Ta);
     T = T + dt * dTdt;
-    times.push(Number(((i + 1) * dt).toFixed(2)));
-    temps.push(Number(T.toFixed(2)));
+    temps.push(Math.round(T)); // suhu bulat per menit
+    times.push((i+1)*dt);
   }
   return { times, temps };
 }
@@ -191,31 +191,29 @@ function drawChart(times, temps) {
   const width = chart.clientWidth || 800, height = 260, pad = 36;
   const maxT = Math.max(...temps), minT = Math.min(...temps);
   const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
+  const svg = document.createElementNS(svgNS,'svg');
   svg.setAttribute('width','100%');
   svg.setAttribute('height',height);
   svg.setAttribute('viewBox','0 0 '+width+' '+height);
 
-  // axis X
   const axisX = document.createElementNS(svgNS,'line');
   axisX.setAttribute('x1',pad); axisX.setAttribute('y1',height-pad);
   axisX.setAttribute('x2',width-pad); axisX.setAttribute('y2',height-pad);
   axisX.setAttribute('stroke','#ccc'); axisX.setAttribute('stroke-width','1');
   svg.appendChild(axisX);
 
-  // axis Y
   const axisY = document.createElementNS(svgNS,'line');
   axisY.setAttribute('x1',pad); axisY.setAttribute('y1',pad);
   axisY.setAttribute('x2',pad); axisY.setAttribute('y2',height-pad);
   axisY.setAttribute('stroke','#ccc'); axisY.setAttribute('stroke-width','1');
   svg.appendChild(axisY);
 
-  // polyline
   const points = temps.map((t,i)=>{
     const x = pad + (i/(temps.length-1))*(width-pad*2);
     const y = pad + (1-((t-minT)/(maxT-minT||1)))*(height-pad*2);
     return x+','+y;
   }).join(' ');
+
   const poly = document.createElementNS(svgNS,'polyline');
   poly.setAttribute('points',points);
   poly.setAttribute('fill','none');
@@ -224,37 +222,6 @@ function drawChart(times, temps) {
   poly.setAttribute('stroke-linecap','round');
   poly.setAttribute('stroke-linejoin','round');
   svg.appendChild(poly);
-
-  // titik + tooltip
-  temps.forEach((t,i)=>{
-    const x = pad + (i/(temps.length-1))*(width-pad*2);
-    const y = pad + (1-((t-minT)/(maxT-minT||1)))*(height-pad*2);
-    const circle = document.createElementNS(svgNS,'circle');
-    circle.setAttribute('cx',x);
-    circle.setAttribute('cy',y);
-    circle.setAttribute('r',4);
-    circle.setAttribute('fill','#d35400');
-    circle.addEventListener('mouseenter',()=> {
-      const tooltip = document.createElement('div');
-      tooltip.id='tooltipChart';
-      tooltip.style.position='absolute';
-      tooltip.style.background='#333';
-      tooltip.style.color='#fff';
-      tooltip.style.padding='4px 8px';
-      tooltip.style.borderRadius='6px';
-      tooltip.style.fontSize='0.9em';
-      tooltip.innerHTML = `t=${times[i]} menit<br>T=${temps[i]} °C`;
-      document.body.appendChild(tooltip);
-      const rect = chart.getBoundingClientRect();
-      tooltip.style.left = (rect.left + x + 10) + 'px';
-      tooltip.style.top = (rect.top + y - 20) + 'px';
-    });
-    circle.addEventListener('mouseleave',()=> {
-      const tt = document.getElementById('tooltipChart');
-      if(tt) tt.remove();
-    });
-    svg.appendChild(circle);
-  });
 
   chart.appendChild(svg);
 }
@@ -280,7 +247,6 @@ document.getElementById('run').addEventListener('click',()=>{
   const dt=parseFloat(document.getElementById('dt').value);
   const dur=parseFloat(document.getElementById('dur').value);
 
-  // validasi
   if([T0,Ta,k,dt,dur].some(v=>isNaN(v))) return alert('Isi semua input dengan angka valid.');
   if(T0 <= Ta) return alert('Suhu awal (T₀) harus lebih besar dari suhu lingkungan (Tₐ).');
   if(k <=0) return alert('Konstanta pendinginan (k) harus > 0.');
@@ -288,52 +254,45 @@ document.getElementById('run').addEventListener('click',()=>{
   if(dur<=0) return alert('Durasi simulasi harus > 0.');
 
   const res=runSimulation(T0,Ta,k,dt,dur);
+
   drawChart(res.times,res.temps);
 
-  // tampilkan ringkasan input
   document.getElementById('summaryT0').textContent = T0;
   document.getElementById('summaryTa').textContent = Ta;
   document.getElementById('summaryK').textContent = k;
   document.getElementById('summaryDt').textContent = dt;
   document.getElementById('summaryDur').textContent = dur;
 
-  // tampilkan hasil page 3
   document.getElementById('inputCard').style.display='none';
   document.getElementById('resultPage').style.display='block';
   setTimeout(()=>{ document.querySelectorAll('#resultPage .card').forEach(c=>c.classList.add('show')); },120);
 
-  // tabel
   const table=document.getElementById('resultTable');
   table.innerHTML='<tr><th>t (menit)</th><th>T (°C)</th></tr>';
   res.times.forEach((t,i)=>{
     table.innerHTML+='<tr><td>'+t+' menit</td><td>'+res.temps[i]+' °C</td></tr>';
   });
 
-  // ringkasan suhu target
   const idx=res.temps.findIndex(v=>v<=65);
   document.getElementById('summary').innerHTML =
     idx>=0 ? '☕ Suhu 65°C tercapai pada t = <b>'+res.times[idx]+' menit</b>'
            : 'ℹ️ Tidak tercapai 65°C dalam durasi simulasi.';
 
-  // klasifikasi suhu terakhir
   const lastTemp = res.temps[res.temps.length-1];
   const classification = classifyTemperature(lastTemp, Ta, T0);
   const classDiv = document.getElementById('classification');
   classDiv.textContent = classification.text;
   classDiv.className = 'classification ' + classification.className;
 
-  // animasi enjoy
   setTimeout(()=>document.getElementById('enjoy').classList.add('show'),800);
 });
 
-// tombol restart
 document.getElementById('restartSim').addEventListener('click', ()=>{
   document.getElementById('resultPage').style.display='none';
   document.getElementById('inputCard').style.display='block';
   setTimeout(()=>document.getElementById('inputCard').classList.add('show'),50);
 });
 
-// PWA service worker
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js');
 }
